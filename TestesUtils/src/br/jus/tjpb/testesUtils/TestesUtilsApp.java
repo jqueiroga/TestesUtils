@@ -31,6 +31,7 @@ public class TestesUtilsApp {
 		garq.gerarArquivo("06modeloDocumento2047KB.html");
 		garq.setTamanho(t7);
 		garq.gerarArquivo("07modeloDocumento2049KB.html");
+		System.out.println("Arquivos gerados com sucesso!");
 	}
 
 }
