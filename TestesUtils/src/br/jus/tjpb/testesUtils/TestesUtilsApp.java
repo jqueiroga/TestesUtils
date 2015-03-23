@@ -15,7 +15,7 @@ public class TestesUtilsApp {
 		int t5 = 512 * KB;
 		int t6 = 2047 * KB;
 		int t7 = 2049 * KB;
-		String txtInicio = "<html><head><title>Teste Modelo Documento 2MB</title></head><body>Teste";
+		String txtInicio = "<html><head><title>Teste Modelo Documento</title></head><body>Teste";
 		String txtFim = "..FimTeste</body>";
 		GeradorDeArquivosHelper garq = new GeradorDeArquivosHelper(t1, txtInicio, txtFim);
 		garq.gerarArquivo("01modeloDocumento1MB.html");
