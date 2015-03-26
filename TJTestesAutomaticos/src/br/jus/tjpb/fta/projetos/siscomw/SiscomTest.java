@@ -27,6 +27,11 @@ public class SiscomTest {
 		driver = new FirefoxDriver();
 		baseUrl = Config.getString("siscomw.url.test"); //$NON-NLS-1$
 		driver.manage().timeouts().implicitlyWait(15, TimeUnit.SECONDS);
+		initOtherTestClasses();
+	}
+	
+	public void initOtherTestClasses() {
+		//Nenhuma inicialização requerida no pai;
 	}
 
 	@After

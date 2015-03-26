@@ -8,7 +8,7 @@ import br.jus.tjpb.fta.utils.CSVUtils;
 public class LoginTest extends SiscomTest {
 
 	private CSVUtils loginFile = new CSVUtils("siscomw", "teste.csv");
-	
+
 	@Test
 	public void loginTest() throws Exception {
 		this.getDriver().get(this.getBaseUrl());
