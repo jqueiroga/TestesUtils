@@ -18,6 +18,9 @@ public class DadosUtils {
 	public static int CARACTERESESPECIAIS = 5;
 	public static int CARACTERESESPECIAISNUMEROS = 6;
 	
+	public static boolean ADICIONAR = true;
+	public static boolean SUBTRAIR = false;
+	
 	public static String getTexto(int tipo, int tamanho) {
 		String str = "";
 		switch (tipo) {
@@ -90,6 +93,17 @@ public class DadosUtils {
 	}
 	
 	@SuppressWarnings("static-access")
+	public static String getData(int qtdeDias, boolean adiciona) {
+		GregorianCalendar gc = new GregorianCalendar();
+		if(adiciona) {
+			gc.add(gc.DAY_OF_MONTH, qtdeDias);
+		} else {
+			gc.add(gc.DAY_OF_MONTH, -qtdeDias);
+		}
+		return "" + gc.get(gc.DAY_OF_MONTH) + "/" + (gc.get(gc.MONTH)+1) + "/" + gc.get(gc.YEAR);
+	}
+	
+	@SuppressWarnings("static-access")
 	public static String getData(int anoMin, int anoMax) {
 		GregorianCalendar gc = new GregorianCalendar();
         int year = Integer.parseInt(getNumero(anoMin, anoMax));
@@ -123,6 +137,8 @@ public class DadosUtils {
 		System.out.println(DadosUtils.getTexto(DadosUtils.CARACTERESESPECIAISNUMEROS, 20));
 		System.out.println(getData());
 		System.out.println(getData(2000,2010));
+		System.out.println(getData(3,DadosUtils.ADICIONAR));
+		System.out.println(getData(3,DadosUtils.SUBTRAIR));
 		System.out.println(getEmail(15));
 	}
 }
