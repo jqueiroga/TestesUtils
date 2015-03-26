@@ -105,7 +105,7 @@ public class DadosUtils {
 			int pos = Integer.parseInt(getNumero(0, 25));
 			str += letrasSemEspaco.toCharArray()[pos];
 		}
-		str += "@tjpb.jus.br";
+		str += "@TJPB.JUS.BR";
 		return str;
 	}
 	
