@@ -128,7 +128,7 @@ public class DadosUtils {
 		System.out.println(getNumero(1, 10));
 		System.out.println(getNumero(1, 20.5, 1));
 		System.out.println(getNumero(1.1, 20, 2));
-		System.out.println(DadosUtils.getTexto(DadosUtils.LETRAS, 20));
+		System.out.println(DadosUtils.getTexto(DadosUtils.LETRAS, 200));
 		System.out.println(DadosUtils.getTexto(DadosUtils.LETRASSEMESPACO, 20));
 		System.out.println(DadosUtils.getTexto(DadosUtils.LETRASNUMEROS, 20));
 		System.out.println(DadosUtils.getTexto(DadosUtils.LETRASNUMEROSCARACTERESESPECIAIS, 20));
