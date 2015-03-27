@@ -84,8 +84,8 @@ public class DadosUtils {
 		return String.format("%."+casasDecimais+"f", dbl);
 	}
 	
-	public static String getNumero(int min, int max) {
-		return "" + (int) ((Math.random()*(max-min))+min);
+	public static String getNumero(long min, long max) {
+		return "" + (long) ((Math.random()*(max-min))+min);
 	}
 	
 	public static String getData() {
