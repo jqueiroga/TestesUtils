@@ -22,8 +22,9 @@ public class UC100CadastrarAdvogadoTest extends SiscomTest {
 		this.getDriver().get(this.getBaseUrl());
 	}
 
+	// SISCW-183:OAB não encontrada
 	@Test
-	public void oabNaoEncontradaTest() throws Exception {
+	public void ct_OABNaoEncontrada() throws Exception {
 		int id = 1; //id do elemento no arquivo CSV
 		
 		realizarConsultaInicialOAB(id, false);
@@ -32,8 +33,9 @@ public class UC100CadastrarAdvogadoTest extends SiscomTest {
 				"O número OAB informado não foi encontrado.");
 	}
 	
+	//SISCW-182:Cadastrar Advogado com OAB já cadastrada no Siscom-w
 	@Test
-	public void advogadoJaCadastradoTest() throws Exception {
+	public void ct_advogadoJaCadastrado() throws Exception {
 		int id = 2; //id do elemento no arquivo CSV
 		
 		realizarConsultaInicialOAB(id, true);
@@ -42,8 +44,9 @@ public class UC100CadastrarAdvogadoTest extends SiscomTest {
 				"Já existe um advogado com o número OAB informado.");
 	}
 	
+	//SISCW-186:Não preencher campos obrigatórios
 	@Test
-	public void camposObrigatoriosNaoPreenchidos() throws Exception {
+	public void ct_camposObrigatoriosNaoPreenchidos() throws Exception {
 		int id = 3; //id do elemento no arquivo CSV
 		realizarConsultaInicialOAB(id, true);
 		this.getDriver().findElement(By.id("form_cadastro_advogado:btn_pesquisar_endereco")).click();
