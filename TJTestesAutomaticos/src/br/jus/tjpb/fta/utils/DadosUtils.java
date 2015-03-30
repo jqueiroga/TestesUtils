@@ -2,6 +2,8 @@ package br.jus.tjpb.fta.utils;
 
 import java.util.GregorianCalendar;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class DadosUtils {
 
 	private static String letras = " ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
@@ -121,6 +123,14 @@ public class DadosUtils {
 		}
 		str += "@TJPB.JUS.BR";
 		return str;
+	}
+	
+	public static String completarComCaracteresAEsquerda(String palavra, int tamanhoTotal, String caractere) {
+		if(palavra.length()>=tamanhoTotal) {
+			return palavra;
+		} else {
+			return StringUtils.leftPad(palavra, tamanhoTotal, caractere);
+		}
 	}
 	
 	public static void main(String[] args) {
