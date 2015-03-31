@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 
 import br.jus.tjpb.fta.utils.CSVUtils;
@@ -14,16 +15,27 @@ import br.jus.tjpb.fta.utils.DadosUtils;
 
 public class St_UC100CadastrarAdvogadoTest extends SiscomTest {
 
+	/**
+	 * Utilitário de manipulação do arquivo CSV
+	 */
 	private CSVUtils cadAdvFile = new CSVUtils("siscomw", "advogados.csv",';');
 	
-	private final int PRIMEIRABUSCA = 6;
+	/**
+	 * Constates com dados e mensagem de configuração fixa na
+	 * suite de testes
+	 */
+	private int ultimoIdUtilizadoCSV = 1;
 	private final String MSG_OAB_NAOENCONTRADO = "O número OAB informado não foi encontrado.";
 	private final String MSG_OAB_JACADASTRATO = "Já existe um advogado com o número OAB informado.";
 	private final String MSG_CAMPOS_OBRIGATORIOS_NAOPREENCHIDOS = "Campo obrigatório não preenchido.";
+	private final String MSG_OAB_SITUACAOIRREGULAR = "Este número não pode ser cadastrado. Verifique sua situação junto à OAB.";
+	private final String MSG_FORMATODASENHAINVALIDO = "A senha de cadastro de advogado precisa ter, obrigatoriamente, no mínimo 8 caracteres, entre letras e números.";
+	private final String MSG_EMAISDIGITADOSDIFERENTES = "Os emails digitados são diferentes.";
+	private final String MSG_SENHASDIGITADASDIFERENTES = "As senhas digitadas são diferentes.";
+	private final String MSG_SUCESSO = "Seu cadastro foi realizado com sucesso! Dentro de instantes você receberá um email de confirmação.";
 		
 	@Override
-	public void setUp() throws Exception {
-		super.setUp();
+	public void init() {
 		this.setBaseUrl(Config.getString("siscomw.url.publica.cadastroAdvogado"));
 		this.getDriver().get(this.getBaseUrl());
 	}
@@ -51,7 +63,7 @@ public class St_UC100CadastrarAdvogadoTest extends SiscomTest {
 	//SISCW-186:Não preencher campos obrigatórios
 	@Test
 	public void ct_camposObrigatoriosNaoPreenchidos() throws Exception {
-		int id = realizarConsultaPrimeiroAcessoOAB(PRIMEIRABUSCA); //id do elemento no arquivo CSV
+		int id = realizarConsultaPrimeiroAcessoOAB(ultimoIdUtilizadoCSV); //id do elemento no arquivo CSV
 		
 		this.getDriver().findElement(By.id("form_cadastro_advogado:btn_pesquisar_endereco")).click();
 		inserirEndereco(id,true);
@@ -61,9 +73,10 @@ public class St_UC100CadastrarAdvogadoTest extends SiscomTest {
 		assertEquals(this.getDriver().findElement(By.xpath("//*[@id='messages']/div/ul/li/span")).getText(), MSG_CAMPOS_OBRIGATORIOS_NAOPREENCHIDOS);
 	}
 	
+	// SISCW-181: Cadastrar Advogado com OAB válida
 	@Test
-	public void cadastrarAdvogadoSucessoTest() throws Exception {
-		int id = realizarConsultaPrimeiroAcessoOAB(PRIMEIRABUSCA);
+	public void ct_cadastrarAdvogadoSucessoTest() throws Exception {
+		int id = realizarConsultaPrimeiroAcessoOAB(ultimoIdUtilizadoCSV);
 				
 		this.getDriver().findElement(By.id("form_cadastro_advogado:btn_pesquisar_endereco")).click();
 		inserirEndereco(id,true);
@@ -73,34 +86,125 @@ public class St_UC100CadastrarAdvogadoTest extends SiscomTest {
 		
 		this.getDriver().findElement(By.id("form_cadastro_advogado:btnFinalizarCadastro")).click();
 		
-		System.out.println("Texto: "+this.getDriver().findElement(By.xpath("//*[@class='text-success']")).getText());
-		
-		assertEquals(this.getDriver().findElement(By.xpath("//*[@class='text-success']")).getText(),
-				"Seu cadastro foi realizado com sucesso! Dentro de instantes você receberá um email de confirmação.");
+		assertEquals(this.getDriver().findElement(By.xpath("//*[@class='text-success']")).getText(), MSG_SUCESSO);
 		
 	}
 	
-	private int realizarConsultaPrimeiroAcessoOAB(int primeiroId) {
+	// SISCW-185:Senha fora do Padrão
+	@Test
+	public void ct_senhaForaDoPadrao() throws Exception {
+		int id = realizarConsultaPrimeiroAcessoOAB(ultimoIdUtilizadoCSV);
+				
+		inserirDadosPessoais(id, true, false, "diego.quirino@tjpb.jus.br");
+		
+		this.getDriver().findElement(By.id("form_cadastro_advogado:senha")).clear();
+		this.getDriver().findElement(By.id("form_cadastro_advogado:senha")).sendKeys("123456789");
+		this.getDriver().findElement(By.id("form_cadastro_advogado:confirmacao_senha")).clear();
+		this.getDriver().findElement(By.id("form_cadastro_advogado:confirmacao_senha")).sendKeys("123456789");
+		
+		this.getDriver().findElement(By.id("form_cadastro_advogado:btn_pesquisar_endereco")).click();
+		inserirEndereco(id,true);
+		this.getDriver().findElement(By.id("formInputEndereco:btIncluir")).click();
+		
+		this.getDriver().findElement(By.id("form_cadastro_advogado:btnFinalizarCadastro")).click();
+		
+		assertEquals(this.getDriver().findElement(By.xpath("//*[@id='messages']/div/ul/li/span")).getText(), MSG_FORMATODASENHAINVALIDO);
+		
+	}
+	
+	//SISCW-1174:Dados divergentes em Email e Senha (foco email)
+	@Test
+	public void ct_emailDiferenteDaConfirmacao() throws Exception {
+		int id = realizarConsultaPrimeiroAcessoOAB(ultimoIdUtilizadoCSV);
+				
+		inserirDadosPessoais(id, true, false, "diego.quirino@tjpb.jus.br");
+		
+		this.getDriver().findElement(By.id("form_cadastro_advogado:email")).clear();
+		this.getDriver().findElement(By.id("form_cadastro_advogado:email")).sendKeys("diego.quirino@tjpb.jus.br");
+		this.getDriver().findElement(By.id("form_cadastro_advogado:confirmacao_email")).clear();
+		this.getDriver().findElement(By.id("form_cadastro_advogado:confirmacao_email")).sendKeys("rogerio.nibon@tjpb.jus.br");
+		
+		this.getDriver().findElement(By.id("form_cadastro_advogado:btn_pesquisar_endereco")).click();
+		inserirEndereco(id,true);
+		this.getDriver().findElement(By.id("formInputEndereco:btIncluir")).click();
+		
+		this.getDriver().findElement(By.id("form_cadastro_advogado:btnFinalizarCadastro")).click();
+		
+		assertEquals(this.getDriver().findElement(By.xpath("//*[@id='messages']/div/ul/li/span")).getText(), MSG_EMAISDIGITADOSDIFERENTES);
+		
+	}
+	
+	//SISCW-1174:Dados divergentes em Email e Senha (foco senha)
+	@Test
+	public void ct_senhaDiferenteDaConfirmacao() throws Exception {
+		int id = realizarConsultaPrimeiroAcessoOAB(ultimoIdUtilizadoCSV);
+				
+		inserirDadosPessoais(id, true, false, "diego.quirino@tjpb.jus.br");
+		
+		this.getDriver().findElement(By.id("form_cadastro_advogado:senha")).clear();
+		this.getDriver().findElement(By.id("form_cadastro_advogado:senha")).sendKeys("12345678abc");
+		this.getDriver().findElement(By.id("form_cadastro_advogado:confirmacao_senha")).clear();
+		this.getDriver().findElement(By.id("form_cadastro_advogado:confirmacao_senha")).sendKeys("123456789AbCd");
+		
+		this.getDriver().findElement(By.id("form_cadastro_advogado:btn_pesquisar_endereco")).click();
+		inserirEndereco(id,true);
+		this.getDriver().findElement(By.id("formInputEndereco:btIncluir")).click();
+		
+		this.getDriver().findElement(By.id("form_cadastro_advogado:btnFinalizarCadastro")).click();
+		
+		assertEquals(this.getDriver().findElement(By.xpath("//*[@id='messages']/div/ul/li/span")).getText(), MSG_SENHASDIGITADASDIFERENTES);
+		
+	}
+	
+	//SISCW-1175:Status da OAB não permitidoID 21 SITUAÇÃO IRREGULAR OAB
+	@Test
+	public void ct_oabNaoPermitidaSituacaoIrregular() throws Exception {
+		int id = 21; //id do elemento no arquivo CSV
+		
+		realizarConsultaInicialOAB(id, true);
+		
+		assertEquals(this.getDriver().findElement(By.xpath("//*[@id='messages']/div/ul/li/span")).getText(), MSG_OAB_SITUACAOIRREGULAR);
+	}
+	
+	/**
+	 * Este método auxilia no encontro de um registro no arquivo CSV
+	 * que esteja disponível para cadastro, consultando sequencialmente
+	 * os advogados (pela OAB) a partir do "primeiroId" informado.
+	 * @param primeiroId
+	 * @return
+	 */
+	public int realizarConsultaPrimeiroAcessoOAB(int primeiroId) {
 		int id = primeiroId; //id do elemento no arquivo CSV
 		boolean oabjacadastrada = true;
 		while(oabjacadastrada) {
 			realizarConsultaInicialOAB(id, true);
 			try {
-				if(this.getDriver().findElement(By.xpath("//*[@id='messages']/div/ul/li/span")).getText().equalsIgnoreCase(MSG_OAB_JACADASTRATO) || 
-						this.getDriver().findElement(By.xpath("//*[@id='messages']/div/ul/li/span")).getText().equalsIgnoreCase(MSG_OAB_NAOENCONTRADO)) {
+				WebElement element = this.getDriver().findElement(By.xpath("//*[@id='messages']/div/ul/li/span"));
+				if( element.getText().equalsIgnoreCase(MSG_OAB_JACADASTRATO) || 
+					element.getText().equalsIgnoreCase(MSG_OAB_NAOENCONTRADO) ||
+					element.getText().equalsIgnoreCase(MSG_OAB_SITUACAOIRREGULAR)) {
 					id += 1;
 					this.getDriver().findElement(By.id("close-error-msg")).click();
 				} else {
 					oabjacadastrada = false;
+					this.ultimoIdUtilizadoCSV = id;
 				}
 			} catch(NoSuchElementException e) {
 				oabjacadastrada = false;
+				this.ultimoIdUtilizadoCSV = id;
 			}
 		}
 		return id;
 	}
 
-	private void realizarConsultaInicialOAB(int id, boolean valido) {
+	/**
+	 * Este método preenche os dados da consulta inicial por OAB de 
+	 * acordo com os dados contidos na linha "id" do arquivo CSV OU
+	 * informando dados inválidos (caso "valido" = false)
+	 * @param id
+	 * @param valido
+	 */
+	public void realizarConsultaInicialOAB(int id, boolean valido) {
 		String oab, letra, ufoab;
 		
 		if(valido) {
@@ -120,7 +224,18 @@ public class St_UC100CadastrarAdvogadoTest extends SiscomTest {
 		this.getDriver().findElement(By.id("form_oab:btn_consultar_oab")).click();
 	}
 	
-	private void inserirDadosPessoais(int id, boolean valido, boolean defensor, String email) {
+	/**
+	 * Este método preenche os dados do frame "Dados Pesoais" de 
+	 * acordo com os dados contidos na linha "id" do arquivo CSV,
+	 * informando se o advogado que está sendo cadastrado é "defensor" 
+	 * (caso "defensor"=true) e o respectivo "email" OU informando 
+	 * dados inválidos (caso "valido" = false)
+	 * @param id
+	 * @param valido
+	 * @param defensor
+	 * @param email
+	 */
+	public void inserirDadosPessoais(int id, boolean valido, boolean defensor, String email) {
 		String rg, emissor, uf, genero, cpf, telefone, nascimento, senha;
 		((JavascriptExecutor)this.getDriver()).executeScript("document.getElementById('form_cadastro_advogado:data_nascimento_input').removeAttribute('readonly');");
 		
@@ -168,7 +283,14 @@ public class St_UC100CadastrarAdvogadoTest extends SiscomTest {
 		this.getDriver().findElement(By.id("form_cadastro_advogado:confirmacao_senha")).sendKeys(senha);
 	}
 	
-	private void inserirEndereco(int id, boolean valido) {
+	/**
+	 * Este método preenche os dados do modal de endereço
+	 * a partir dos dados presentes na linha "id" do CSV OU
+	 * informando dados inválidos (caso "valido" = false)
+	 * @param id
+	 * @param valido
+	 */
+	public void inserirEndereco(int id, boolean valido) {
 		String cep, numero, complemento;
 		
 		if(valido) {
@@ -182,7 +304,6 @@ public class St_UC100CadastrarAdvogadoTest extends SiscomTest {
 		this.getDriver().findElement(By.id("formPesquisaEndereco:autocompleteCep_input")).click();
 		this.getDriver().findElement(By.id("formPesquisaEndereco:autocompleteCep_input")).clear();
 		this.getDriver().findElement(By.id("formPesquisaEndereco:autocompleteCep_input")).sendKeys(cep);
-		//this.getDriver().findElement(By.id("formPesquisaEndereco:linkPesquisaEndereco")).click();
 		if(cep != null && cep != "") {
 			this.getDriver().findElement(By.id("formPesquisaEnderecoTabela:tabela:0:link1")).click();
 		}

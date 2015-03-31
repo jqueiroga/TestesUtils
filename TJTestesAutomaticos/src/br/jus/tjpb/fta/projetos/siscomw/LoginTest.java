@@ -8,21 +8,32 @@ import br.jus.tjpb.fta.utils.CSVUtils;
 public class LoginTest extends SiscomTest {
 
 	private CSVUtils loginFile = new CSVUtils("siscomw", "login.csv");
+	
+	@Override
+	public void init() {
+		this.getDriver().get(this.getBaseUrl());
+	}
 
 	@Test
 	public void loginTest() throws Exception {
-		this.getDriver().get(this.getBaseUrl());
-		
+			
 		String[] perfis = {"atendimento", "distribuidor", "serventuario"};
 		this.loginsConsecutivos(perfis);
 		
 	}
 	
+	/**
+	 * Uma vez logado, clica no item "Sair" para deslogar
+	 */
 	public void logout() {
 		this.getDriver().findElement(By.id("user-data-logout")).click();
 		this.getDriver().findElement(By.linkText("Sim, quero encerrar a sessão!")).click();
 	}
 	
+	/**
+	 * Faz o login e em seguida o logout para um "perfil" informado (válido)
+	 * @param perfis
+	 */
 	public void loginsConsecutivos(String[] perfis) {
 		for(String perfil: perfis) {
 			login(perfil);
@@ -30,6 +41,10 @@ public class LoginTest extends SiscomTest {
 		}
 	}
 	
+	/**
+	 * Realiza o login para um "perfil" informado (válido)
+	 * @param perfil
+	 */
 	public void login(String perfil) {
 		int i = 0;
 		switch (perfil) {

@@ -12,7 +12,7 @@ public class UCModeloTest extends SiscomTest {
 	private CSVUtils ucModeloTestCSV = new CSVUtils("siscomw", "teste.csv");
 
 	@Override
-	public void initOtherTestClasses() {
+	public void init() {
 		login = new LoginTest();
 		login.setDriver(this.getDriver());
 		login.setBaseUrl(this.getBaseUrl());
