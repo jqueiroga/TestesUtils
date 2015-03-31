@@ -90,6 +90,15 @@ public class DadosUtils {
 		return "" + (long) ((Math.random()*(max-min))+min);
 	}
 	
+	public static String getNumero(int tamanho) {
+		String str = "";
+		for(int i=0; i<tamanho/2; i++) {
+			int pos1 = Integer.parseInt(getNumero(0, 9));
+			str += numeros.toCharArray()[pos1];
+		}
+		return str;
+	}
+	
 	public static String getData() {
 		return getData(1900,2010);
 	}
