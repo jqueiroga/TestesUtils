@@ -24,7 +24,7 @@ public class St_UC100CadastrarAdvogadoTest extends SiscomTest {
 	 * Constates com dados e mensagem de configuração fixa na
 	 * suite de testes
 	 */
-	private int ultimoIdUtilizadoCSV = 1;
+	private int ultimoIdUtilizadoCSV = 10;
 	private final String MSG_OAB_NAOENCONTRADO = "O número OAB informado não foi encontrado.";
 	private final String MSG_OAB_JACADASTRATO = "Já existe um advogado com o número OAB informado.";
 	private final String MSG_CAMPOS_OBRIGATORIOS_NAOPREENCHIDOS = "Campo obrigatório não preenchido.";
@@ -32,6 +32,9 @@ public class St_UC100CadastrarAdvogadoTest extends SiscomTest {
 	private final String MSG_FORMATODASENHAINVALIDO = "A senha de cadastro de advogado precisa ter, obrigatoriamente, no mínimo 8 caracteres, entre letras e números.";
 	private final String MSG_EMAISDIGITADOSDIFERENTES = "Os emails digitados são diferentes.";
 	private final String MSG_SENHASDIGITADASDIFERENTES = "As senhas digitadas são diferentes.";
+	private final String MSG_CPFDIGITADODIFERENTE = "O CPF digitado não confere com a OAB informada.";
+	private final String MSG_CPFINVALIDODIGITADODIFERENTE = "Campos informados no formato inválido!";
+	private final String MSG_CEP_NAOENCONTRADO = "CEP não encontrado.";
 	private final String MSG_SUCESSO = "Seu cadastro foi realizado com sucesso! Dentro de instantes você receberá um email de confirmação.";
 		
 	@Override
@@ -71,6 +74,25 @@ public class St_UC100CadastrarAdvogadoTest extends SiscomTest {
 		this.getDriver().findElement(By.id("form_cadastro_advogado:btnFinalizarCadastro")).click();
 		
 		assertEquals(this.getDriver().findElement(By.xpath("//*[@id='messages']/div/ul/li/span")).getText(), MSG_CAMPOS_OBRIGATORIOS_NAOPREENCHIDOS);
+	}
+	
+	//SISCW-186:Não preencher campos obrigatórios
+	@Test
+	public void ct_camposObrigatoriosNaoPreenchidosModalEndereco() throws Exception {
+		int id = realizarConsultaPrimeiroAcessoOAB(ultimoIdUtilizadoCSV); //id do elemento no arquivo CSV
+		
+		inserirDadosPessoais(id, true, false, "diego.quirino@tjpb.jus.br");
+
+		this.getDriver().findElement(By.id("form_cadastro_advogado:btn_pesquisar_endereco")).click();
+		//Endereço//
+		this.getDriver().findElement(By.id("formPesquisaEndereco:autocompleteCep_input")).click();
+		this.getDriver().findElement(By.id("formPesquisaEndereco:autocompleteCep_input")).clear();
+		this.getDriver().findElement(By.id("formPesquisaEndereco:autocompleteCep_input")).sendKeys("00000000");
+		////////////		
+		/*this.getDriver().findElement(By.id("formInputEndereco:btIncluir")).click();
+		this.getDriver().findElement(By.id("form_cadastro_advogado:btnFinalizarCadastro")).click();
+		*/
+		assertEquals(this.getDriver().findElement(By.xpath("//*[@id='messages']/div/ul/li/span")).getText(), MSG_CEP_NAOENCONTRADO);
 	}
 	
 	// SISCW-181: Cadastrar Advogado com OAB válida
@@ -166,6 +188,46 @@ public class St_UC100CadastrarAdvogadoTest extends SiscomTest {
 		assertEquals(this.getDriver().findElement(By.xpath("//*[@id='messages']/div/ul/li/span")).getText(), MSG_OAB_SITUACAOIRREGULAR);
 	}
 	
+	//SISCW-198:CPF de advogado digitado é diferente do recuperado
+	@Test
+	public void ct_advogadoOABCPFDiferenteRecuperado() throws Exception {
+		int id = realizarConsultaPrimeiroAcessoOAB(ultimoIdUtilizadoCSV);
+		
+		inserirDadosPessoais(id, true, false, "diego.quirino@tjpb.jus.br");
+		
+		this.getDriver().findElement(By.id("form_cadastro_advogado:cpf")).clear();
+		this.getDriver().findElement(By.id("form_cadastro_advogado:cpf")).sendKeys("01374919489");
+		
+		this.getDriver().findElement(By.id("form_cadastro_advogado:btn_pesquisar_endereco")).click();
+		inserirEndereco(id,true);
+		this.getDriver().findElement(By.id("formInputEndereco:btIncluir")).click();
+		
+		this.getDriver().findElement(By.id("form_cadastro_advogado:btnFinalizarCadastro")).click();
+		
+		assertEquals(this.getDriver().findElement(By.xpath("//*[@id='messages']/div/ul/li/span")).getText(), MSG_CPFDIGITADODIFERENTE);
+		
+	}
+	
+	//SISCW-198:CPF de advogado digitado é diferente do recuperado -> CPF INVÁLIDO
+	@Test
+	public void ct_advogadoOABCPFInvalidoDiferenteRecuperado() throws Exception {
+		int id = realizarConsultaPrimeiroAcessoOAB(ultimoIdUtilizadoCSV);
+
+		inserirDadosPessoais(id, true, false, "diego.quirino@tjpb.jus.br");
+
+		this.getDriver().findElement(By.id("form_cadastro_advogado:cpf")).clear();
+		this.getDriver().findElement(By.id("form_cadastro_advogado:cpf")).sendKeys(DadosUtils.getNumero(11111111111l, 99999999999l));
+
+		this.getDriver().findElement(By.id("form_cadastro_advogado:btn_pesquisar_endereco")).click();
+		inserirEndereco(id,true);
+		this.getDriver().findElement(By.id("formInputEndereco:btIncluir")).click();
+
+		this.getDriver().findElement(By.id("form_cadastro_advogado:btnFinalizarCadastro")).click();
+
+		assertEquals(this.getDriver().findElement(By.xpath("//*[@id='messages']/div/ul/li/span")).getText(), MSG_CPFINVALIDODIGITADODIFERENTE);
+
+	}
+
 	/**
 	 * Este método auxilia no encontro de um registro no arquivo CSV
 	 * que esteja disponível para cadastro, consultando sequencialmente
